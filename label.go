@@ -37,6 +37,11 @@ func (label *Label) Read() string {
 }
 
 
+func (label *Label) ReadI(interface{}) interface{} {
+    return label.Read()
+}
+
+
 // Set the label to the given value.
 func (label *Label) Set(nv string) {
     label.mtx.Lock()

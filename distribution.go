@@ -30,6 +30,11 @@ func (distrib *Distribution) Read() int64 {
 }
 
 
+func (distrib *Distribution) ReadI(v interface{}) interface{} {
+    return distrib.Read()
+}
+
+
 // Add a value to the distribution.
 func (distrib *Distribution) Add(i int64) {
 }

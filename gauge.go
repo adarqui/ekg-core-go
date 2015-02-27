@@ -30,6 +30,11 @@ func (gauge *Gauge) Read() int64 {
 }
 
 
+func (gauge *Gauge) ReadI(v interface{}) interface{} {
+    return gauge.Read()
+}
+
+
 // Increase the gauge by one.
 func (gauge *Gauge) Inc() {
     gauge.Add(1)

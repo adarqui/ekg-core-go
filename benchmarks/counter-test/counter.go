@@ -9,7 +9,7 @@ import (
 
 func main() {
     store := ekg_core.New()
-    counter := store.CreateCounter("test_counter")
+    counter := store.CreateCounter("test.counter")
 
     for n := 1; n <= 100; n++ {
         go func() {

@@ -31,6 +31,11 @@ func (counter *Counter) Read() int64 {
 }
 
 
+func (counter *Counter) ReadI(v interface{}) interface{} {
+    return counter.Read()
+}
+
+
 // Increase the counter by one.
 func (counter *Counter) Inc() {
     counter.Add(1)

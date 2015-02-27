@@ -32,49 +32,155 @@ package ekg_core
 import (
 )
 
+// A metric entry
+type Metric struct {
+    getter func (interface{}) interface{}
+}
+
+
+// A group entry
+type Group struct {
+    sampleAction func() interface{}
+    samplerMetrics map[string]Metric
+}
+
 
 // A mutable metric store.
 type Store struct {
-    metrics map[string]interface{}
+    metrics map[string]Metric
+    groups map[int]Group
+    stateNextId int
 }
 
 
 // Create a new, empty metric store.
 func New () *Store {
     store := Store{
-        metrics: make(map[string]interface{}),
+        metrics: make(map[string]Metric),
+        groups: make(map[int]Group),
     }
     return &store
 }
 
 
-// Create and register a zero-initialized counter.
-func (store *Store) CreateCounter(name string) *Counter {
-    counter := new(Counter)
-    store.metrics[name] = counter
-    return counter
+/*
+-- | The value of a sampled metric.
+data Value = Counter {-# UNPACK #-} !Int64
+           | Gauge {-# UNPACK #-} !Int64
+           | Label {-# UNPACK #-} !T.Text
+           | Distribution !Distribution.Stats
+           deriving Show
+*/
+
+// * Registering metrics
+
+// $registering
+// Before metrics can be sampled they need to be registered with the
+// metric store. The same metric name can only be used once. Passing a
+// metric name that has already been used to one of the register
+// function is an 'error'.
+
+// register
+func (store *Store) Register(name string, sample func(interface{}) interface{}) {
+    m := Metric{}
+    m.getter = sample
+    store.metrics[name] = m
 }
 
 
-// Create and register a zero-initialized gauge.
-func (store *Store) CreateGauge(name string) *Gauge {
-    gauge := new(Gauge)
-    store.metrics[name] = gauge
-    return gauge
+// | Register an action that will be executed any time one of the
+// metrics computed from the value it returns needs to be sampled.
+//
+// When one or more of the metrics listed in the first argument needs
+// to be sampled, the action is executed and the provided getter
+// functions will be used to extract the metric(s) from the action's
+// return value.
+//
+// The registered action might be called from a different thread and
+// therefore needs to be thread-safe.
+//
+// This function allows you to sample groups of metrics together. This
+// is useful if
+//
+// * you need a consistent view of several metric or
+//
+// * sampling the metrics together is more efficient.
+//
+// For example, sampling GC statistics needs to be done atomically or
+// a GC might strike in the middle of sampling, rendering the values
+// incoherent. Sampling GC statistics is also more efficient if done
+// in \"bulk\", as the run-time system provides a function to sample all
+// GC statistics at once.
+//
+// Note that sampling of the metrics is only atomic if the provided
+// action computes @a@ atomically (e.g. if @a@ is a record, the action
+// needs to compute its fields atomically if the sampling is to be
+// atomic.)
+//
+// Example usage:
+//
+// > {-# LANGUAGE OverloadedStrings #-}
+// > import qualified Data.HashMap.Strict as M
+// > import GHC.Stats
+// > import System.Metrics
+// >
+// > main = do
+// >     store <- newStore
+// >     let metrics =
+// >             [ ("num_gcs", Counter . numGcs)
+// >             , ("max_bytes_used", Gauge . maxBytesUsed)
+// >             ]
+// >     registerGroup (M.fromList metrics) getGCStats store
+func (store *Store) RegisterGroup(getters map[string]Metric, cb func() interface{}) {
+    g := Group {
+        sampleAction: cb,
+        samplerMetrics: getters,
+    }
+    store.groups[store.stateNextId] = g
+    store.stateNextId  += 1
 }
 
 
-// Create and register an empty label.
-func (store *Store) CreateLabel(name string) *Label {
-    label := new(Label)
-    store.metrics[name] = label
-    return label
+
+// | Sample all metrics. Sampling is /not/ atomic in the sense that
+// some metrics might have been mutated before they're sampled but
+// after some other metrics have already been sampled.
+func (store *Store) SampleAll() (map [string]interface{}) {
+    sample_metrics := store.readAllRefs()
+    sample_groups := store.SampleGroups()
+    return merge(sample_metrics, sample_groups)
 }
 
 
-// Create and register an event tracker.
-func (store *Store) CreateDistribution(name string) *Distribution {
-    distrib := new(Distribution)
-    store.metrics[name] = distrib
-    return distrib
+func (store *Store) SampleGroups() (map [string]interface{}) {
+    res := make(map[string]interface{})
+    for _, v := range store.groups {
+        r := v.sampleAction()
+        for j, w := range v.samplerMetrics {
+            res[j] = w.getter(r)
+        }
+    }
+    return res
+}
+
+
+func (store *Store) SampleOne() {
+}
+
+
+
+func (store *Store) readAllRefs() (map [string]interface{}) {
+    res := make(map[string]interface{})
+    for k, v := range store.metrics {
+        res[k] = v.getter(nil)
+    }
+    return res
+}
+
+
+func merge (a, b map [string] interface{}) (map [string] interface{}) {
+    for k, v := range b {
+        a[k] = v
+    }
+    return a
 }
