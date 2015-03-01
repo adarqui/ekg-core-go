@@ -1,3 +1,4 @@
 *.swp
-examples/benchmarks/counter
+counter-test
+sample-test
 dev
