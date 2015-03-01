@@ -1,1 +1,4 @@
 [-] specify types for all of my maps/params etc, ie: Sample instead of map[string]Metric
+[-] licenses
+[-] travis-ci
+[-] distribution

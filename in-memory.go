@@ -34,34 +34,34 @@ import ()
 // Create and register a zero-initialized counter.
 func (store *Store) CreateCounter(name string) *Counter {
 	counter := newCounter()
-	store.Register(name, counter.ReadI)
+	store.Register(name, counter.ReadI, COUNTER)
 	return counter
 }
 
 // Create and register a zero-initialized gauge.
 func (store *Store) CreateGauge(name string) *Gauge {
 	gauge := newGauge()
-	store.Register(name, gauge.ReadI)
+	store.Register(name, gauge.ReadI, GAUGE)
 	return gauge
 }
 
 // Create and register an empty label.
 func (store *Store) CreateLabel(name string) *Label {
 	label := newLabel()
-	store.Register(name, label.ReadI)
+	store.Register(name, label.ReadI, LABEL)
 	return label
 }
 
 // Create and register an event tracker.
 func (store *Store) CreateDistribution(name string) *Distribution {
 	distrib := newDistribution()
-	store.Register(name, distrib.ReadI)
+	store.Register(name, distrib.ReadI, DISTRIBUTION)
 	return distrib
 }
 
 // Create and register a timestamper.
 func (store *Store) CreateTimestamp(name string) *Timestamp {
 	timestamp := newTimestamp()
-	store.Register(name, timestamp.ReadI)
+	store.Register(name, timestamp.ReadI, TIMESTAMP)
 	return timestamp
 }

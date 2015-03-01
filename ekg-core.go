@@ -31,9 +31,27 @@ package ekg_core
 
 import ()
 
+// Type Information
+type Type int
+
+const (
+	COUNTER Type = iota
+	GAUGE
+	LABEL
+	DISTRIBUTION
+	TIMESTAMP
+)
+
+// A representation of a value
+type Value struct {
+	Typ Type
+	Val interface{}
+}
+
 // A metric entry
 type Metric struct {
 	getter func(interface{}) interface{}
+	typ    Type
 }
 
 // A group entry
@@ -62,25 +80,31 @@ func New() *Store {
 // metric. The provided action to read the value must be thread-safe.
 // Also see 'CreateCounter'.
 func (store *Store) RegisterCounter(name string, cb func(interface{}) interface{}) {
-	store.Register(name, cb)
+	store.Register(name, cb, COUNTER)
 }
 
 // | Register an integer-valued metric. The provided action to read
 // the value must be thread-safe. Also see 'CreateGauge'.
 func (store *Store) RegisterGauge(name string, cb func(interface{}) interface{}) {
-	store.Register(name, cb)
+	store.Register(name, cb, GAUGE)
 }
 
 // | Register a text metric. The provided action to read the value
 // must be thread-safe. Also see 'CreateLabel'.
 func (store *Store) RegisterLabel(name string, cb func(interface{}) interface{}) {
-	store.Register(name, cb)
+	store.Register(name, cb, LABEL)
 }
 
 // | Register a distribution metric. The provided action to read the
 // value must be thread-safe. Also see 'CreateDistribution'.
 func (store *Store) RegisterDistribution(name string, cb func(interface{}) interface{}) {
-	store.Register(name, cb)
+	store.Register(name, cb, DISTRIBUTION)
+}
+
+// | Register a timestampn metric. The provided action to read the
+// value must be thread-safe. Also see 'CreateTimestamp'.
+func (store *Store) RegisterTimestamp(name string, cb func(interface{}) interface{}) {
+	store.Register(name, cb, TIMESTAMP)
 }
 
 /*
@@ -101,9 +125,10 @@ data Value = Counter {-# UNPACK #-} !Int64
 // function is an 'error'.
 
 // register
-func (store *Store) Register(name string, sample func(interface{}) interface{}) {
+func (store *Store) Register(name string, sample func(interface{}) interface{}, typ Type) {
 	m := Metric{}
 	m.getter = sample
+	m.typ = typ
 	store.metrics[name] = m
 }
 
@@ -162,18 +187,18 @@ func (store *Store) RegisterGroup(getters map[string]Metric, cb func() interface
 // | Sample all metrics. Sampling is /not/ atomic in the sense that
 // some metrics might have been mutated before they're sampled but
 // after some other metrics have already been sampled.
-func (store *Store) SampleAll() map[string]interface{} {
+func (store *Store) SampleAll() map[string]Value {
 	sample_metrics := store.readAllRefs()
 	sample_groups := store.SampleGroups()
 	return merge(sample_metrics, sample_groups)
 }
 
-func (store *Store) SampleGroups() map[string]interface{} {
-	res := make(map[string]interface{})
+func (store *Store) SampleGroups() map[string]Value {
+	res := make(map[string]Value)
 	for _, v := range store.groups {
 		r := v.sampleAction()
 		for j, w := range v.samplerMetrics {
-			res[j] = w.getter(r)
+			res[j] = Value{Typ: w.typ, Val: w.getter(r)}
 		}
 	}
 	return res
@@ -182,15 +207,15 @@ func (store *Store) SampleGroups() map[string]interface{} {
 func (store *Store) SampleOne() {
 }
 
-func (store *Store) readAllRefs() map[string]interface{} {
-	res := make(map[string]interface{})
+func (store *Store) readAllRefs() map[string]Value {
+	res := make(map[string]Value)
 	for k, v := range store.metrics {
-		res[k] = v.getter(nil)
+		res[k] = Value{Typ: v.typ, Val: v.getter(nil)}
 	}
 	return res
 }
 
-func merge(a, b map[string]interface{}) map[string]interface{} {
+func merge(a, b map[string]Value) map[string]Value {
 	for k, v := range b {
 		a[k] = v
 	}
