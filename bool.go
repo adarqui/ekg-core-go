@@ -1,7 +1,6 @@
 package ekg_core
 
-import (
-)
+import ()
 
 type Bool struct {
 	v bool
@@ -29,10 +28,10 @@ func (boolean *Bool) True() {
 
 // Set the boolean to false.
 func (boolean *Bool) False() {
-    boolean.Set(false)
+	boolean.Set(false)
 }
 
 // Set the boolean to <truth>.
 func (boolean *Bool) Set(truth bool) {
-    boolean.v = truth
+	boolean.v = truth
 }
