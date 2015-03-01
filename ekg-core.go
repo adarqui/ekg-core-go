@@ -65,6 +65,24 @@ func (store *Store) RegisterCounter(name string, cb func(interface{}) interface{
 	store.Register(name, cb)
 }
 
+// | Register an integer-valued metric. The provided action to read
+// the value must be thread-safe. Also see 'CreateGauge'.
+func (store *Store) RegisterGauge(name string, cb func(interface{}) interface{}) {
+	store.Register(name, cb)
+}
+
+// | Register a text metric. The provided action to read the value
+// must be thread-safe. Also see 'CreateLabel'.
+func (store *Store) RegisterLabel(name string, cb func(interface{}) interface{}) {
+	store.Register(name, cb)
+}
+
+// | Register a distribution metric. The provided action to read the
+// value must be thread-safe. Also see 'CreateDistribution'.
+func (store *Store) RegisterDistribution(name string, cb func(interface{}) interface{}) {
+	store.Register(name, cb)
+}
+
 /*
 -- | The value of a sampled metric.
 data Value = Counter {-# UNPACK #-} !Int64
