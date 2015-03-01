@@ -1,4 +1,4 @@
 *.swp
-counter-test
-sample-test
+benchmarks/counter-test/counter-test
+benchmarks/sample-test/sample-test
 dev
