@@ -40,6 +40,7 @@ const (
 	LABEL
 	DISTRIBUTION
 	TIMESTAMP
+    BOOL
 )
 
 // A representation of a value
@@ -126,11 +127,21 @@ data Value = Counter {-# UNPACK #-} !Int64
 
 // register
 func (store *Store) Register(name string, sample func(interface{}) interface{}, typ Type) {
+/*
 	m := Metric{}
 	m.getter = sample
 	m.typ = typ
+
 	store.metrics[name] = m
+*/
+    registerMetric(store.metrics, name, sample, typ)
 }
+
+func registerMetric(metrics map[string]Metric, name string, sample func(interface{}) interface{}, typ Type) {
+    m := Metric { typ: typ, getter: sample }
+    metrics[name] = m
+}
+
 
 // | Register an action that will be executed any time one of the
 // metrics computed from the value it returns needs to be sampled.

@@ -12,24 +12,24 @@ type GCMemStats struct {
 
 func (store *Store) RegisterGCMetrics() {
 	m := make(map[string]Metric)
-	m["gcs.last_gc"] = Metric{getter: getGcsLastGC}
-	m["gcs.next_gc"] = Metric{getter: getMemNextGC}
-	m["gcs.num_gc"] = Metric{getter: getGcsNumGC}
-	m["gcs.alloc"] = Metric{getter: getMemAlloc}
-	m["gcs.total_alloc"] = Metric{getter: getMemTotalAlloc}
-	m["gcs.sys"] = Metric{getter: getMemSys}
-	m["gcs.lookups"] = Metric{getter: getMemLookups}
-	m["gcs.mallocs"] = Metric{getter: getMemMallocs}
-	m["gcs.frees"] = Metric{getter: getMemFrees}
-	m["gcs.heap_alloc"] = Metric{getter: getMemHeapAlloc}
-	m["gcs.heap_sys"] = Metric{getter: getMemHeapSys}
-	m["gcs.heap_idle"] = Metric{getter: getMemHeapIdle}
-	m["gcs.heap_inuse"] = Metric{getter: getMemHeapInuse}
-	m["gcs.heap_released"] = Metric{getter: getMemHeapReleased}
-	m["gcs.heap_objects"] = Metric{getter: getMemHeapObjects}
-	m["gcs.pause_total_ns"] = Metric{getter: getMemPauseTotalNs}
-	m["gcs.enable_gc"] = Metric{getter: getMemEnableGC}
-	m["gcs.debug_gc"] = Metric{getter: getMemDebugGC}
+    registerMetric(m, "gcs.last_gc", getGcsLastGC, TIMESTAMP)
+    registerMetric(m, "gcs.next_gc", getMemNextGC, GAUGE)
+    registerMetric(m, "gcs.num_gc", getGcsNumGC, COUNTER)
+    registerMetric(m, "gcs.alloc", getMemAlloc, GAUGE)
+    registerMetric(m, "gcs.total_alloc", getMemTotalAlloc, COUNTER)
+    registerMetric(m, "gcs.sys", getMemSys, COUNTER)
+    registerMetric(m, "gcs.lookups", getMemLookups, COUNTER)
+    registerMetric(m, "gcs.mallocs", getMemMallocs, COUNTER)
+    registerMetric(m, "gcs.frees", getMemFrees, COUNTER)
+    registerMetric(m, "gcs.heap_alloc", getMemHeapAlloc, GAUGE)
+    registerMetric(m, "gcs.heap_sys", getMemHeapSys, GAUGE)
+    registerMetric(m, "gcs.heap_idle", getMemHeapIdle, GAUGE)
+    registerMetric(m, "gcs.heap_inuse", getMemHeapInuse, GAUGE)
+    registerMetric(m, "gcs.heap_released", getMemHeapReleased, GAUGE)
+    registerMetric(m, "gcs.heap_objects", getMemHeapObjects, COUNTER)
+    registerMetric(m, "gcs.pause_total_ns", getMemPauseTotalNs, COUNTER)
+    registerMetric(m, "gcs.enable_gc", getMemEnableGC, BOOL)
+    registerMetric(m, "gcs.debug_gc", getMemDebugGC, BOOL)
 	store.RegisterGroup(m, _getGCStats)
 }
 
