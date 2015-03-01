@@ -63,6 +63,14 @@ func New () *Store {
 }
 
 
+// | Register a non-negative, monotonically increasing, integer-valued
+// metric. The provided action to read the value must be thread-safe.
+// Also see 'CreateCounter'.
+func (store *Store) RegisterCounter(name string, cb func(interface{}) interface{}) {
+    store.Register(name, cb)
+}
+
+
 /*
 -- | The value of a sampled metric.
 data Value = Counter {-# UNPACK #-} !Int64
