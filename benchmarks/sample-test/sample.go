@@ -13,6 +13,7 @@ func main() {
 	store.CreateLabel("test.label").Set("Hello.")
 	_ = store.CreateDistribution("test.distribution")
 	_ = store.CreateTimestamp("test.timestamp")
+    _ = store.CreateBool("test.bool")
 
 	store.RegisterGCMetrics()
 

@@ -59,9 +59,16 @@ func (store *Store) CreateDistribution(name string) *Distribution {
 	return distrib
 }
 
-// Create and register a timestamper.
+// Create and register a timestamp.
 func (store *Store) CreateTimestamp(name string) *Timestamp {
 	timestamp := newTimestamp()
 	store.Register(name, timestamp.ReadI, TIMESTAMP)
 	return timestamp
+}
+
+// Create and register a boolean.
+func (store *Store) CreateBool(name string) *Bool {
+	boolean := newBool()
+	store.Register(name, boolean.ReadI, BOOL)
+	return boolean
 }

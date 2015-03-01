@@ -102,10 +102,16 @@ func (store *Store) RegisterDistribution(name string, cb func(interface{}) inter
 	store.Register(name, cb, DISTRIBUTION)
 }
 
-// | Register a timestampn metric. The provided action to read the
+// | Register a timestamp metric. The provided action to read the
 // value must be thread-safe. Also see 'CreateTimestamp'.
 func (store *Store) RegisterTimestamp(name string, cb func(interface{}) interface{}) {
 	store.Register(name, cb, TIMESTAMP)
+}
+
+// | Register a boolean metric. The provided action to read the
+// value must be thread-safe. Also see 'CreateBoolean'.
+func (store *Store) RegisterBool(name string, cb func(interface{}) interface{}) {
+	store.Register(name, cb, BOOL)
 }
 
 /*
