@@ -5,45 +5,39 @@
 package ekg_core
 
 import (
-    "github.com/adarqui/math"
-    "sync/atomic"
-    "runtime"
+	"github.com/adarqui/math"
+	"runtime"
+	"sync/atomic"
 )
-
 
 // A mutable, integer-valued counter.
 type Counter struct {
-    v int64
+	v int64
 }
-
 
 // Create a new, zero initialized, counter.
-func newCounter() (*Counter) {
-    counter := new(Counter)
-    return counter
+func newCounter() *Counter {
+	counter := new(Counter)
+	return counter
 }
-
 
 // Get the current value of the counter.
 func (counter *Counter) Read() int64 {
-    v := atomic.LoadInt64(&counter.v)
-    return v
+	v := atomic.LoadInt64(&counter.v)
+	return v
 }
-
 
 func (counter *Counter) ReadI(v interface{}) interface{} {
-    return counter.Read()
+	return counter.Read()
 }
-
 
 // Increase the counter by one.
 func (counter *Counter) Inc() {
-    counter.Add(1)
+	counter.Add(1)
 }
-
 
 // Add the argument to the counter.
 func (counter *Counter) Add(i int64) {
-    atomic.AddInt64(&counter.v, math.AbsInt64(i))
-    runtime.Gosched()
+	atomic.AddInt64(&counter.v, math.AbsInt64(i))
+	runtime.Gosched()
 }

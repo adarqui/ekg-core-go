@@ -2,24 +2,24 @@
 package main
 
 import (
-    "github.com/adarqui/ekg-core-go"
-    "fmt"
-    "time"
+	"fmt"
+	"github.com/adarqui/ekg-core-go"
+	"time"
 )
 
 func main() {
-    store := ekg_core.New()
-    counter := store.CreateCounter("test.counter")
+	store := ekg_core.New()
+	counter := store.CreateCounter("test.counter")
 
-    for n := 1; n <= 100; n++ {
-        go func() {
-            for iters := 1 ; iters <= 100000 ; iters++ {
-                counter.Inc()
-            }
-        }()
-    }
+	for n := 1; n <= 100; n++ {
+		go func() {
+			for iters := 1; iters <= 100000; iters++ {
+				counter.Inc()
+			}
+		}()
+	}
 
-    time.Sleep(2 * time.Second)
-    fmt.Println(counter.Read())
-    fmt.Println("done.")
+	time.Sleep(2 * time.Second)
+	fmt.Println(counter.Read())
+	fmt.Println("done.")
 }

@@ -29,47 +29,41 @@
 // 'registerGcMetrics'.
 package ekg_core
 
-import (
-)
+import ()
 
 // A metric entry
 type Metric struct {
-    getter func (interface{}) interface{}
+	getter func(interface{}) interface{}
 }
-
 
 // A group entry
 type Group struct {
-    sampleAction func() interface{}
-    samplerMetrics map[string]Metric
+	sampleAction   func() interface{}
+	samplerMetrics map[string]Metric
 }
-
 
 // A mutable metric store.
 type Store struct {
-    metrics map[string]Metric
-    groups map[int]Group
-    stateNextId int
+	metrics     map[string]Metric
+	groups      map[int]Group
+	stateNextId int
 }
-
 
 // Create a new, empty metric store.
-func New () *Store {
-    store := Store{
-        metrics: make(map[string]Metric),
-        groups: make(map[int]Group),
-    }
-    return &store
+func New() *Store {
+	store := Store{
+		metrics: make(map[string]Metric),
+		groups:  make(map[int]Group),
+	}
+	return &store
 }
-
 
 // | Register a non-negative, monotonically increasing, integer-valued
 // metric. The provided action to read the value must be thread-safe.
 // Also see 'CreateCounter'.
 func (store *Store) RegisterCounter(name string, cb func(interface{}) interface{}) {
-    store.Register(name, cb)
+	store.Register(name, cb)
 }
-
 
 /*
 -- | The value of a sampled metric.
@@ -90,11 +84,10 @@ data Value = Counter {-# UNPACK #-} !Int64
 
 // register
 func (store *Store) Register(name string, sample func(interface{}) interface{}) {
-    m := Metric{}
-    m.getter = sample
-    store.metrics[name] = m
+	m := Metric{}
+	m.getter = sample
+	store.metrics[name] = m
 }
-
 
 // | Register an action that will be executed any time one of the
 // metrics computed from the value it returns needs to be sampled.
@@ -140,55 +133,48 @@ func (store *Store) Register(name string, sample func(interface{}) interface{}) 
 // >             ]
 // >     registerGroup (M.fromList metrics) getGCStats store
 func (store *Store) RegisterGroup(getters map[string]Metric, cb func() interface{}) {
-    g := Group {
-        sampleAction: cb,
-        samplerMetrics: getters,
-    }
-    store.groups[store.stateNextId] = g
-    store.stateNextId  += 1
+	g := Group{
+		sampleAction:   cb,
+		samplerMetrics: getters,
+	}
+	store.groups[store.stateNextId] = g
+	store.stateNextId += 1
 }
-
-
 
 // | Sample all metrics. Sampling is /not/ atomic in the sense that
 // some metrics might have been mutated before they're sampled but
 // after some other metrics have already been sampled.
-func (store *Store) SampleAll() (map [string]interface{}) {
-    sample_metrics := store.readAllRefs()
-    sample_groups := store.SampleGroups()
-    return merge(sample_metrics, sample_groups)
+func (store *Store) SampleAll() map[string]interface{} {
+	sample_metrics := store.readAllRefs()
+	sample_groups := store.SampleGroups()
+	return merge(sample_metrics, sample_groups)
 }
 
-
-func (store *Store) SampleGroups() (map [string]interface{}) {
-    res := make(map[string]interface{})
-    for _, v := range store.groups {
-        r := v.sampleAction()
-        for j, w := range v.samplerMetrics {
-            res[j] = w.getter(r)
-        }
-    }
-    return res
+func (store *Store) SampleGroups() map[string]interface{} {
+	res := make(map[string]interface{})
+	for _, v := range store.groups {
+		r := v.sampleAction()
+		for j, w := range v.samplerMetrics {
+			res[j] = w.getter(r)
+		}
+	}
+	return res
 }
-
 
 func (store *Store) SampleOne() {
 }
 
-
-
-func (store *Store) readAllRefs() (map [string]interface{}) {
-    res := make(map[string]interface{})
-    for k, v := range store.metrics {
-        res[k] = v.getter(nil)
-    }
-    return res
+func (store *Store) readAllRefs() map[string]interface{} {
+	res := make(map[string]interface{})
+	for k, v := range store.metrics {
+		res[k] = v.getter(nil)
+	}
+	return res
 }
 
-
-func merge (a, b map [string] interface{}) (map [string] interface{}) {
-    for k, v := range b {
-        a[k] = v
-    }
-    return a
+func merge(a, b map[string]interface{}) map[string]interface{} {
+	for k, v := range b {
+		a[k] = v
+	}
+	return a
 }

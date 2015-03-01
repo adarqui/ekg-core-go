@@ -2,20 +2,20 @@
 package main
 
 import (
-    "github.com/adarqui/ekg-core-go"
-    "fmt"
+	"fmt"
+	"github.com/adarqui/ekg-core-go"
 )
 
 func main() {
-    store := ekg_core.New()
-    _ = store.CreateCounter("test.counter")
-    _ = store.CreateGauge("test.gauge")
-    store.CreateLabel("test.label").Set("Hello.")
-    _ = store.CreateDistribution("test.distribution")
-    _ = store.CreateTimestamp("test.timestamp")
+	store := ekg_core.New()
+	_ = store.CreateCounter("test.counter")
+	_ = store.CreateGauge("test.gauge")
+	store.CreateLabel("test.label").Set("Hello.")
+	_ = store.CreateDistribution("test.distribution")
+	_ = store.CreateTimestamp("test.timestamp")
 
-    store.RegisterGCMetrics()
+	store.RegisterGCMetrics()
 
-    samples := store.SampleAll()
-    fmt.Println(samples)
+	samples := store.SampleAll()
+	fmt.Println(samples)
 }
