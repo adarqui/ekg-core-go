@@ -1,20 +1,27 @@
 package ekg_core
 
-import ()
+import (
+	"sync"
+)
 
 type Bool struct {
-	v bool
+	mtx *sync.Mutex
+	v   bool
 }
 
 // Create a new, false initialized, boolean.
 func newBool() *Bool {
 	boolean := new(Bool)
+	boolean.mtx = &sync.Mutex{}
 	return boolean
 }
 
 // Get the current value of the boolean.
 func (boolean *Bool) Read() bool {
-	return boolean.v
+	boolean.mtx.Lock()
+	v := boolean.v
+	boolean.mtx.Unlock()
+	return v
 }
 
 func (boolean *Bool) ReadI(v interface{}) interface{} {
@@ -33,5 +40,17 @@ func (boolean *Bool) False() {
 
 // Set the boolean to <truth>.
 func (boolean *Bool) Set(truth bool) {
+	boolean.mtx.Lock()
 	boolean.v = truth
+	boolean.mtx.Unlock()
+}
+
+// Toggle the boolean value.
+func (boolean *Bool) Toggle() {
+	v := boolean.Read()
+	if v == true {
+		boolean.Set(false)
+	} else {
+		boolean.Set(true)
+	}
 }
